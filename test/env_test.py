@@ -28,6 +28,8 @@ y = target.cal_output(**params)
 print ('y',y)
 
 print ("random inputs: ", target.random_inputs(2))
+print ("random inputs: ", target.random_inputs(2))
 print ("order inputs: ", target.order_inputs(3))
-
+params = target.order_inputs(3)
+target.add_points(y, **params)
 

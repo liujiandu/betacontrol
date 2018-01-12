@@ -101,20 +101,21 @@ class Target(object):
         return X
 
 
-    def add_point(self,y, **param):
+    def add_points(self,y, **params):
         """
         Parameters:
         ------------
         param: dict
-            Dictionary with parameters names as keys and array values            
-        y: array
+            Dictionary with parameters names as keys and array values(ndim>=2)            
+        y: array, ndim>=2
         """
-        x = self.dict_to_array(**param)
-        if x in self:
-            self._cache[_hashable(x)] = y
-            self._Xlist.append(x)
-            self._Ylist.append(y)
-            self._length += 1
+        x = self.dict_to_array(**params)
+        for xi, yi in zip(x, y):
+            if xi not in self:
+                self._cache[_hashable(xi)] = y
+                self._Xlist.append(xi)
+                self._Ylist.append(yi)
+                self._length += 1
 
 
     def set_random_state(self,random_state): 
@@ -129,7 +130,7 @@ class Target(object):
         calculate outputs of the target function 
         """
         return self.target_func(**params)
-
+        
 
     def set_bounds(self, new_pbounds):
         """
@@ -147,7 +148,7 @@ class Target(object):
         """
         dict tranpose to array
         """
-        return np.concatenate([params[key] for key in self.keys])
+        return np.concatenate([params[key] for key in self.keys], axis=-1)
 
 
 

@@ -2,8 +2,7 @@ import numpy as np
 from sklearn.gaussian_process.kernels import Matern
 from scipy.stats import norm
 
-#from env.target_space import TargetSpace
-from env.target import Target
+from env.target_space import TargetSpace
 from regressor.gaussian_process import GPR as GaussianProcessRegressor
 from optimizer.gradient import minimize
 from acqfunc.gpacq import AcquisitionFunction
@@ -21,32 +20,23 @@ class BayesianOptimization(object):
         self.regressor = GaussianProcessRegressor(kernel=Matern(nu=2.5),
                                            n_restarts_optimizer=25,
                                            random_state=self.random_state)
-        self.space = Target(f, pbounds, random_state=random_state)
+        self.init_points = []
+        self.space = TargetSpace(f, pbounds, random_state)
         
         self.x_init = []
         self.y_init = []
-        #self.init_points = []
         self.initialized=False
         self._acqkw = {'n_warmup':100000, 'n_iter':250}
 
-    
     def init(self, init_points):
         #init points
-        rand_points = self.space.random_inputs(init_points)
-        #self.init_points.append(rand_points)
-        
-        #evaluate target function at all init points
-        #for x in self.init_points:
-        y = self.space.cal_output(**rand_points)
+        rand_points = self.space.random_points(init_points)
+        self.init_points.extend(rand_points)
 
-        #print rand_points
-        #print y
-        self.space.add_points(y,**rand_points)
-        print self.space.X
-        print self.space.Y
-        self.initialized = True
-        
-        '''
+        #evaluate target function at all init points
+        for x in self.init_points:
+            y = self._observe_point(x)
+
         #add the points to the obsevations
         if self.x_init:
             x_init = np.vstack(self.x_init)
@@ -54,11 +44,12 @@ class BayesianOptimization(object):
             for x, y in zip(x_init, y_init):
                 self.space.add_observation(x,y)
         self.initialized = True
-        '''
 
-    
+    def _observe_point(self, x):
+        y = self.space.observe_point(x)
+        return y
 
-    '''
+
     def initialize(self, points_dict):
         self.y_init.extend(points_dict['target'])
         for i in range(len(points_dict['target'])):
@@ -67,7 +58,6 @@ class BayesianOptimization(object):
                 all_points.append(points_dict[key][i])
             self.x_init_append(all_points)
 
-    '''
 
     def maximize(self, 
                  init_points=5, 
@@ -83,18 +73,14 @@ class BayesianOptimization(object):
         #initialize
         if not self.initialized:
             self.init(init_points)
-       
-        y_max = max(self.space.Y)
+        y_max = self.space.Y.max()
 
         #set gp parameters
         self.regressor.set_params(**gp_params)
-        
-    
+
         #gaussian process fit
-        help(self.regressor.fit)
         self.regressor.fit(self.space.X, self.space.Y)
-        
-        
+
         #find argmax of the acquisition function
         x_max = self.acq.acq_max(ac=self.acq.acqf,
                         gp = self.regressor,
@@ -102,7 +88,7 @@ class BayesianOptimization(object):
                         bounds = self.space.bounds,
                         random_state = self.random_state,
                         **self._acqkw)
-        '''
+        
         #Iterative process
         for i in range(n_iter):
             #Append most recently generated values to X and Y arrays
@@ -120,21 +106,17 @@ class BayesianOptimization(object):
                             bounds = self.space.bounds,
                             random_state = self.random_state,
                             **self._acqkw)
-        '''
     @property
     def X(self):
         return self.space.X
     @property
     def Y(self):
         return self.space.Y
-    
 
 if __name__=="__main__":
-    from env.function import nlfunc
+    from env.function import target
 
-    bo = BayesianOptimization(nlfunc, {'x':(np.array([0,-5]), np.array([10, 10]))})
-
-    #bo.init(2)
+    bo = BayesianOptimization(target, {'x':(-5, 10)})
     bo.maximize(init_points=2, n_iter=10, acq='ucb', kappa=5)
 
 

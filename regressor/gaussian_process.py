@@ -1,6 +1,5 @@
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-
 class GPR(object):
     def __init__(self, kernel, n_restarts_optimizer, random_state):
         self.gpr_ = GaussianProcessRegressor(kernel=kernel,
