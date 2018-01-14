@@ -20,7 +20,7 @@ def plt_gp(bo, x, y):
     acq = plt.subplot(gs[1])
 
     bo.regressor.fit(bo.X, bo.Y) 
-    mu, sigma = bo.regressor.predict(x, return_std=True)
+    mu, sigma = bo.regressor.predict(x)
     mu = mu.flatten() 
     axis.plot(x, y, linewidth=3, label='Target')
     axis.plot(bo.X.flatten(), bo.Y.flatten(), 'D', markersize=8, color='r', label='Observation')
@@ -29,7 +29,7 @@ def plt_gp(bo, x, y):
     if sigma is not None:
         axis.fill(np.concatenate([x, x[::-1]]), np.concatenate([mu-1.96*sigma, (mu+1.96*sigma)[::-1]]), alpha=0.6, fc='c', ec='None')
 
-    utility = bo.acq.acqf(x, bo.regressor, 0)
+    utility = bo.acq.acqf(x)
     acq.plot(x, utility, label='Utility Function')
     plt.show()
 
@@ -40,10 +40,10 @@ if __name__=="__main__":
                                          n_restarts_optimizer=25,
                                          random_state=random_state)
     space = TargetSpace(nlfunc, (np.array([-5]), np.array([10])), random_state=random_state)
-    acq = UCB(kind='ucb', kappa=5)
+    acq = UCB(regressor, kind='ucb', kappa=5)
 
     bo = BayesianOptimization(space, regressor, acq, random_state)
-    bo.maximize(init_points=2, n_iter=20, acq='ucb', kappa=5)
+    bo.maximize(init_points=2, n_iter=10, acq='ucb', kappa=5)
     x = np.linspace(-5, 10, 200).reshape(-1,1)
     x = {"x":x}
     y = nlfunc(**x)

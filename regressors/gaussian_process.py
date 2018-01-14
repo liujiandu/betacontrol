@@ -1,3 +1,9 @@
+"""
+gaussian process regressor
+Author: Liujiandu
+Date: 2018/1/7
+"""
+
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
@@ -8,6 +14,8 @@ class GP(object):
         self.gpr_ = GaussianProcessRegressor(kernel=self.kernel,
                 n_restarts_optimizer=n_restarts_optimizer,
                 random_state = random_state)
+        
+        self.ymax = None
     
     def fit(self, x, y):
         """
@@ -18,7 +26,7 @@ class GP(object):
         x: 2d-array
             must be 2d-array, shape = (smaple_num, feature_dim)
         y: 2d-array
-            must be 2d-array, shape = (sample_num, output_dim)
+            must be 2d-array, shape = (sample_num, 1)
 
         """
         assert x.ndim==2, 'x must be 2D array'
@@ -47,3 +55,4 @@ class GP(object):
 
     def set_params(self, **gp_params):
         self.gpr_.set_params(**gp_params)
+        

@@ -1,8 +1,9 @@
-#=====================
-# multilayer neural network
-# Author: Liujiandu
-# Date: 2018/1/10
-#=====================
+"""
+multilayer neural network
+Author: Liujiandu
+Date: 2018/1/10
+"""
+
 import tensorflow as tf
 
 def fc(x, shape, scope, actf=tf.nn.tanh):

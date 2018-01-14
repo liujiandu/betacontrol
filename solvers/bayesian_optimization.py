@@ -43,7 +43,7 @@ class BayesianOptimization(object):
         if not self.initialized:
             self.init(init_points)
        
-        y_max = max(self.space.Y)
+        self.regressor.ymax = max(self.space.Y)
 
         #set gp parameters
         #self.regressor.set_params(**gp_params) 
@@ -53,9 +53,7 @@ class BayesianOptimization(object):
         
         
         #find argmax of the acquisition function
-        x_max = self.acq.acq_max(#ac=self.acq.acqf,
-                        regressor = self.regressor,
-                        y_max=y_max,
+        x_max = self.acq.acq_max(
                         bounds = self.space.bounds,
                         random_state = self.random_state,
                         **self._acqkw)
@@ -68,11 +66,10 @@ class BayesianOptimization(object):
             self.regressor.fit(self.X, self.Y)
 
             #update maximum value to search for next probe point
-            if self.space.Y[-1] > y_max:
-                y_max = self.space.Y[-1]
+            if self.space.Y[-1] > self.regressor.ymax:
+                self.regressor.ymax = self.space.Y[-1]
             #Maximum acquasition function to find next probing point
-            x_max = self.acq.acq_max(regressor = self.regressor,
-                                y_max=y_max,
+            x_max = self.acq.acq_max(
                                 bounds = self.space.bounds,
                                 random_state = self.random_state,
                                 **self._acqkw)
