@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import gridspec
 
 #from bayes_opt import BayesianOptimization
-from bayesian_optimization import BayesianOptimization
+from solvers.bayesian_optimization import BayesianOptimization
 from env.function import nlfunc
 
 
